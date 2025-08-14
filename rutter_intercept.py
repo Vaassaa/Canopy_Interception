@@ -10,8 +10,10 @@ def rutterIntercept(time,R,T,u,rh,Rn):
     # --- Canopy Parameters ---
     p = 0.25         # free throughfall [-]
     S = 1.4e-3          # canopy storage capacity [m] (typically 0.5–2 mm)
-    b = 3.7          # first drainage exponential coefficient [?]
-    a = -18          # second drainage exponential coefficient [?]
+    # b = 3.7          # first drainage exponential coefficient [?]
+    # a = 10          # second drainage exponential coefficient [?]
+    b = 2900          # first drainage exponential coefficient [?]
+    a = 6          # second drainage exponential coefficient [?]
     z = 10           # reference height [m]
     h = 12           # tree heigh [m]
     d = 0.75*h       # displacement height [m]
@@ -27,15 +29,16 @@ def rutterIntercept(time,R,T,u,rh,Rn):
     lambda_v = 2.45e6 # latent heat [J/kg]
     P = 101325      # atmospheric pressure [Pa]
     MW = 0.622      # ratio molecular weight of water vapor/dry air [-]
-    gamma = (cp * P) / (lambda_v * MW)  # psychrometric constant [kPa/°C]
-    gamma = gamma / 1000 # kPa -> Pa
+    gamma = (cp * P) / (lambda_v * MW)  # psychrometric constant [Pa/°C]
 
     # time step
-    delta_t = time[1] - time[0]
+    # delta_t = time[1] - time[0]
+    delta_t = 1 # the time step in seconds doesnt make sense..
     # Allocation
-    C = 0.0
     D = 0.0
-    Tt = np.zeros_like(R)
+    C = 0.0
+    Tt = np.zeros(len(R))
+    Ct = np.zeros(len(R))
     for t in range(len(R)):
         print(f'TIME STEP: {time[t]}')
         
@@ -76,8 +79,9 @@ def rutterIntercept(time,R,T,u,rh,Rn):
         # Update canopy storage with physical bounds
         C = max(0.0, min(S, C + dC))
         print(f'C: {C}')
+        Ct[t] = C
 
         # Throughfall reaching the soil
         Tt[t] = p * R[t,1] + D
 
-    return Tt
+    return Ct,Tt
