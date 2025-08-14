@@ -7,10 +7,13 @@ Disseration Work
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 from rutter_intercept import rutterIntercept
 
 data_dir = 'data/'
 out_dir = "out/"
+os.makedirs(out_dir, exist_ok=True)
+
 # load precipitation
 R = np.loadtxt(data_dir+'rain.in')
 # load air temperature
