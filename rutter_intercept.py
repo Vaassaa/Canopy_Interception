@@ -9,11 +9,11 @@ import numpy as np
 def rutterIntercept(time,R,T,u,rh,Rn):
     # --- Canopy Parameters ---
     p = 0.25         # free throughfall [-]
-    S = 1.4e-3          # canopy storage capacity [m] (typically 0.5–2 mm)
+    S = 0.5e-3          # canopy storage capacity [m] (typically 0.5–2 mm)
     # b = 3.7          # first drainage exponential coefficient [?]
     # a = 10          # second drainage exponential coefficient [?]
     b = 2900          # first drainage exponential coefficient [?]
-    a = 6          # second drainage exponential coefficient [?]
+    a = 3          # second drainage exponential coefficient [?]
     z = 10           # reference height [m]
     h = 12           # tree heigh [m]
     d = 0.75*h       # displacement height [m]

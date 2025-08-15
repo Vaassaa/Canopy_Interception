@@ -15,7 +15,7 @@ out_dir = "out/"
 os.makedirs(out_dir, exist_ok=True)
 
 # load precipitation
-R = np.loadtxt(data_dir+'rain.in')
+R = np.loadtxt(data_dir+'rain_free.in')
 # load air temperature
 T = np.loadtxt(data_dir+'temp.in')
 # load wind speed
@@ -39,5 +39,5 @@ plt.grid()
 plt.legend()
 plt.xlabel("time [s]")
 plt.ylabel("precipitation [m]")
-# plt.show()
+plt.show()
 plt.savefig(out_dir+'intercept.png')
