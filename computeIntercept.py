@@ -8,14 +8,16 @@ Disseration Work
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from rutter_intercept import rutterIntercept
+# from rutter_intercept import rutterIntercept
+from rutter_intercept_calib import rutterIntercept
 
 data_dir = 'data/'
 out_dir = "out/"
 os.makedirs(out_dir, exist_ok=True)
 
 # load precipitation
-R = np.loadtxt(data_dir+'rain_free.in')
+R_free = np.loadtxt(data_dir+'rain_free.in')
+R_tree = np.loadtxt(data_dir+'rain_tree.in')
 # load air temperature
 T = np.loadtxt(data_dir+'temp.in')
 # load wind speed
@@ -26,18 +28,28 @@ rh = np.loadtxt(data_dir+'rh.in')
 Rn = np.loadtxt(data_dir+'solar.in')
 
 # define time
-time = R[:,0]
+time = R_free[:,0]
 
 # Compute Interception
-C,Tt = rutterIntercept(time,R,T,u,rh,Rn)
+# C,Tt = rutterIntercept(time,R,T,u,rh,Rn)
+
+# Compute Interception based on calibration results
+# calib_vars = [5.20578360e-04,
+              # 3.69054261e+03,
+              # 5.76918252e+00]
+calib_vars = [5.42257250e-04,
+              8.64141567e+03,
+              2.60761163e+00]
+C,Tt = rutterIntercept(time,calib_vars,R_free,T,u,rh,Rn)
 
 # plot results
-plt.plot(time, R[:,1], label="Rainfall")
-plt.plot(time, Tt, label="Throughfall")
-plt.plot(time, C, label="Water on Canopy")
+plt.plot(time, R_free[:,1], color = 'cornflowerblue', label="Rainfall")
+plt.plot(time, R_tree[:,1], color = 'mediumblue', linestyle = '--', label="Measurement")
+plt.plot(time, Tt, color = 'firebrick', label="Throughfall")
+plt.plot(time, C, color = 'darksalmon', linestyle = '-.', label="Water on Canopy")
 plt.grid()
 plt.legend()
 plt.xlabel("time [s]")
 plt.ylabel("precipitation [m]")
-plt.show()
 plt.savefig(out_dir+'intercept.png')
+plt.show()

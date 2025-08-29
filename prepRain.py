@@ -11,11 +11,11 @@ import os
 data_dir = 'data/'
 out_dir = "out/"
 os.makedirs(out_dir, exist_ok=True)
-out_file = "rain_tree.in"
+out_file = "rain_free.in"
 
 # Read the data
-filename = "canopy_rain_25072025_30072025_raw"
-# filename = "free_rain_25072025_30072025_raw"
+# filename = "canopy_rain_25072025_30072025_raw"
+filename = "free_rain_25072025_30072025_raw"
 df = pd.read_csv(data_dir+filename+".csv")
 
 # Rename columns
