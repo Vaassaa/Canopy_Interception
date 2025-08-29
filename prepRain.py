@@ -23,8 +23,22 @@ df.columns = ["Time", "precip"]
 
 # Reformat time column to datetime
 df["Time"] = pd.to_datetime(df["Time"])
+# The raw data is sampled in 00:00:03 times
+df["Time"] = df["Time"].dt.floor("10min")
+# Reformat precipitation into numeric
+df["precip"] = pd.to_numeric(df["precip"], errors="coerce")
 # Convert precipitation from mm -> m
 df["precip"] = df["precip"] / 1000.0
+
+# Fix missing steps 
+# Set datetime index for resampling
+df = df.set_index("Time")
+
+# Resample to 10-minute frequency and interpolate linearly
+df = df.resample("10min").interpolate("linear")
+
+# Reset index
+df = df.reset_index()
 
 # Calculate seconds since start
 start_time = df["Time"].iloc[0]
