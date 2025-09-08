@@ -13,11 +13,14 @@ from scipy.optimize import differential_evolution
 import os
 from rutter_intercept_calib import rutterIntercept
 from scipy import integrate
+import time
+import shutil
 
 data_dir = "data/"
 out_dir = "out/"
-filename = "intercept_opt"
+filename = "rutter_optimal"
 os.makedirs(out_dir, exist_ok=True)
+run_id = int(time.time())  # seconds since 1970
 
 # load precipitation
 R_free = np.loadtxt(data_dir+'rain_free.in')
@@ -44,23 +47,24 @@ def optIntercept(par):
     C,Tt = rutterIntercept(time,calib_vars,R_free,T,u,rh,Rn)
 
     # compute error in integral manner
-    Tt_int = integrate.cumulative_trapezoid(Tt, time, initial=0)
-    R_int = integrate.cumulative_trapezoid(R_tree[:,1], time, initial=0)
-    err_int = np.abs(Tt_int - R_int)
-    err_int = err_int[-1]
+    # Tt_int = integrate.cumulative_trapezoid(Tt, time, initial=0)
+    # R_int = integrate.cumulative_trapezoid(R_tree[:,1], time, initial=0)
+    # err_int = np.abs(Tt_int - R_int)
+    # err_int = err_int[-1]
 
     # error in root mean square manner
     diff = Tt - R_tree[:,1]
     err_rmse = np.sum(diff**2)/len(diff)
 
     # combine errors
-    err = err_int + err_rmse
-    print(f"ERROR: {err}")
+    # err = err_int + err_rmse
+    err = err_rmse
+    print(f"******* \n ERROR  {err} \n*******")
     return err
 
 S_bnd = (0.1e-3,5e-3)
-b_bnd = (-20e3, 20e3) # bounds for thermal convection parameter
-a_bnd = (-50.0, 50.0)  # Bounds for thermal conductivity parameters
+b_bnd = (1e3, 20e3) # bounds for thermal convection parameter
+a_bnd = (1.0, 50.0)  # Bounds for thermal conductivity parameters
 bounds = [S_bnd, b_bnd, a_bnd] 
 result = differential_evolution(optIntercept, bounds, 
                                 workers=-1, 
@@ -70,11 +74,19 @@ result = differential_evolution(optIntercept, bounds,
                                 maxiter=100000)
 
 # Output the optimized parameter values and error
+print("Run ID:", run_id)
 print("Optimized values:\n", result.x, '\n', result.fun)
 
 # Write out a file with optimized values
-with open(out_dir + filename + ".txt", 'w') as file:
+fullname_opt = out_dir + filename + "_" + str(run_id) + ".txt"
+with open(fullname_opt, 'w') as file:
     file.write('#S b a\n')
-    file.write(' '.join(f"{x:.5f}" for x in result.x) + '\n')
+    file.write(' '.join(f"{x}" for x in result.x) + '\n')
     file.write('#error\n')
     file.write(f"{result.fun}")
+
+# Rewrite the the trusty file with the latest optimal file
+trusty_file = out_dir + "rutter_optimal.txt" 
+
+# copy the file
+shutil.copy(fullname_opt, trusty_file)
