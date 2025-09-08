@@ -30,19 +30,22 @@ Rn = np.loadtxt(data_dir+'solar.in')
 # define time
 time = R_free[:,0]
 
-# Compute Interception
-# C,Tt = rutterIntercept(time,R,T,u,rh,Rn)
+# Read the pass optimalized values
+file_path = out_dir+"intercept_opt.txt"
+calib_vars = np.loadtxt(file_path, comments="#", max_rows=1)
 
-# Compute Interception based on calibration results
 # calib_vars = [5.20578360e-04,
               # 3.69054261e+03,
               # 5.76918252e+00]
-calib_vars = [5.42257250e-04,
-              8.64141567e+03,
-              2.60761163e+00]
-C,Tt = rutterIntercept(time,calib_vars,R_free,T,u,rh,Rn)
+# calib_vars = [5.42257250e-04,
+              # 8.64141567e+03,
+              # 2.60761163e+00]
 
-# plot results
+# Compute interception
+C,Tt = rutterIntercept(time,calib_vars,R_free,T,u,rh,Rn)
+print(f"Computed interception with these parameters (S,b,a): \n {calib_vars}")
+
+# Plot results
 plt.plot(time, R_free[:,1], color = 'cornflowerblue', label="Rainfall")
 plt.plot(time, R_tree[:,1], color = 'mediumblue', linestyle = '--', label="Measurement")
 plt.plot(time, Tt, color = 'firebrick', label="Throughfall")
