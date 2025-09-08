@@ -12,9 +12,11 @@ import matplotlib.pyplot as plt
 from scipy.optimize import differential_evolution 
 import os
 from rutter_intercept_calib import rutterIntercept
+from scipy import integrate
 
-data_dir = 'data/'
+data_dir = "data/"
 out_dir = "out/"
+filename = "intercept_opt"
 os.makedirs(out_dir, exist_ok=True)
 
 # load precipitation
@@ -40,14 +42,24 @@ def optIntercept(par):
     calib_vars = [S, b, a]
     # Compute Interception
     C,Tt = rutterIntercept(time,calib_vars,R_free,T,u,rh,Rn)
+
+    # compute error in integral manner
+    Tt_int = integrate.cumulative_trapezoid(Tt, time, initial=0)
+    R_int = integrate.cumulative_trapezoid(R_tree[:,1], time, initial=0)
+    err_int = np.abs(Tt_int - R_int)
+    err_int = err_int[-1]
+
     # error in root mean square manner
     diff = Tt - R_tree[:,1]
-    err = np.sum(diff**2)/len(diff)
+    err_rmse = np.sum(diff**2)/len(diff)
+
+    # combine errors
+    err = err_int + err_rmse
     print(f"ERROR: {err}")
     return err
 
 S_bnd = (0.1e-3,5e-3)
-b_bnd = (-10000, 10000) # bounds for thermal convection parameter
+b_bnd = (-20e3, 20e3) # bounds for thermal convection parameter
 a_bnd = (-50.0, 50.0)  # Bounds for thermal conductivity parameters
 bounds = [S_bnd, b_bnd, a_bnd] 
 result = differential_evolution(optIntercept, bounds, 
@@ -59,3 +71,10 @@ result = differential_evolution(optIntercept, bounds,
 
 # Output the optimized parameter values and error
 print("Optimized values:\n", result.x, '\n', result.fun)
+
+# Write out a file with optimized values
+with open(out_dir + filename + ".txt", 'w') as file:
+    file.write('#S b a\n')
+    file.write(' '.join(f"{x:.5f}" for x in result.x) + '\n')
+    file.write('#error\n')
+    file.write(f"{result.fun}")
